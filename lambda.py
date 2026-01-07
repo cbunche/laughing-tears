@@ -41,6 +41,7 @@ for line_num, line in enumerate(lines[2:], start=3):
 
     # Extract fields - record_content is ALWAYS at index 8
     file_name = parts[1].strip()
+    record_type = parts[4].strip()
     # Preserve exact record content - DO NOT strip spaces (they're part of fixed-width format)
     record_content = parts[8].rstrip("\n")
 
@@ -59,6 +60,16 @@ for line_num, line in enumerate(lines[2:], start=3):
         current_file = file_name
         record_count = 0
         total_files += 1
+
+    record_length_limits = {
+        "FILE_HEADER": 41,
+        "CLAIM_HEADER": 5651,
+        "CLAIM_LINE": 2332,
+        "FILE_TRAILER": 44,
+    }
+    max_length = record_length_limits.get(record_type)
+    if max_length is not None and len(record_content) > max_length:
+        record_content = record_content[:max_length]
 
     # Write record - all internal spaces preserved!
     file_handle.write(record_content + "\n")
